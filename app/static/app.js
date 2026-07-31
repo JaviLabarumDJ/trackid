@@ -373,15 +373,19 @@
     menuButton.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="13" cy="8" r="1.4"/></svg>';
     const list = document.createElement("div");
     list.className = "track-row-menu-list";
-    const rescan = document.createElement("button");
-    rescan.type = "button";
-    rescan.innerHTML = "Rescan this section<small>Re-identify ±2 min around this moment</small>";
-    rescan.addEventListener("click", () => requestRescan(track, metadata));
+    const copyTitle = document.createElement("button");
+    copyTitle.type = "button";
+    copyTitle.innerHTML = "Copy track<small>Artist – Title (mix) to clipboard</small>";
+    copyTitle.addEventListener("click", () => copyTrackLabel(track, copyTitle));
     const copyLink = document.createElement("button");
     copyLink.type = "button";
     copyLink.textContent = "Copy timestamp link";
     copyLink.addEventListener("click", () => copyTimestamp(track, metadata, copyLink));
-    list.append(rescan, copyLink);
+    const rescan = document.createElement("button");
+    rescan.type = "button";
+    rescan.innerHTML = "Rescan this section<small>Re-identify ±2 min around this moment</small>";
+    rescan.addEventListener("click", () => requestRescan(track, metadata));
+    list.append(copyTitle, copyLink, rescan);
     menu.append(menuButton, list);
 
     row.append(number, main, timestamp, source, menu);
@@ -402,6 +406,25 @@
       openStream(state.jobId);
     } catch (error) {
       alert(error.message);
+    }
+  }
+
+  function trackLabel(track) {
+    const parts = [];
+    if (track.artist) parts.push(track.artist);
+    parts.push(track.title);
+    let label = parts.join(" - ");
+    if (track.mix) label = `${label} (${track.mix})`;
+    return label;
+  }
+
+  async function copyTrackLabel(track, button) {
+    const label = trackLabel(track);
+    try {
+      await navigator.clipboard.writeText(label);
+      flashButton(button, "Copied");
+    } catch {
+      window.prompt("Copy track", label);
     }
   }
 

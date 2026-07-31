@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="TrackID is a free and open-source app that turns any DJ set on YouTube into a complete tracklist with timestamps."
+    />
+    <meta name="theme-color" content="#0a0b09" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:title" content="TrackID — free DJ set tracklists from YouTube" />
+    <meta
+      property="og:description"
+      content="Paste a YouTube session URL, TrackID extracts every track with its timestamp. No login, no API keys, no paywall."
+    />
+    <meta property="og:type" content="website" />
+    <title>TrackID — free DJ tracklist generator</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="site-header shell">
+      <a class="brand" href="/" aria-label="TrackID home">
+        <span class="brand-mark" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </span>
+        <span>TRACK<span>ID</span></span>
+      </a>
+      <nav class="site-nav">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#self-host">Self-host</a>
+        <a class="ghost" href="https://github.com/" rel="noopener noreferrer">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero shell" id="start">
+        <div class="eyebrow"><span></span> Free, local, open-source</div>
+        <h1>From a YouTube set to a <em>full tracklist.</em></h1>
+        <p class="hero-copy">
+          Paste a DJ session URL. TrackID identifies every track and rebuilds the list
+          with timestamps you can jump to in one click. No account, no API keys.
+        </p>
+
+        <form class="search-card" id="track-form">
+          <label for="youtube-url">Session URL</label>
+          <div class="search-row">
+            <div class="url-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.07.07l2-2a5 5 0 0 0-7.07-7.07l-1.15 1.15" />
+                <path d="M14 11a5 5 0 0 0-7.07-.07l-2 2A5 5 0 0 0 12 20l1.15-1.15" />
+              </svg>
+              <input
+                id="youtube-url"
+                name="url"
+                type="url"
+                inputmode="url"
+                autocomplete="url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                required
+              />
+            </div>
+            <button class="primary-button" type="submit" id="submit-button">
+              <span>Generate tracklist</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
+            </button>
+          </div>
+
+          <fieldset class="mode-toggle" aria-label="Analysis mode">
+            <legend>Analysis mode</legend>
+            <label class="mode-option">
+              <input type="radio" name="mode" value="quick" />
+              <div>
+                <strong>Quick</strong>
+                <span>~75 s samples, no transition detection. Under 2 min for most sets.</span>
+              </div>
+            </label>
+            <label class="mode-option">
+              <input type="radio" name="mode" value="thorough" checked />
+              <div>
+                <strong>Thorough</strong>
+                <span>~35 s samples + silence-based transition detection. Best accuracy.</span>
+              </div>
+            </label>
+          </fieldset>
+
+          <div class="form-meta">
+            <span><i class="status-dot"></i> Free and registration-free</span>
+            <span>Up to 4 hours per session</span>
+            <span>Your audio never leaves your machine</span>
+          </div>
+        </form>
+      </section>
+
+      <section class="status-panel shell is-hidden" id="status-panel" aria-live="polite">
+        <div class="status-orbit" aria-hidden="true"><span></span></div>
+        <div class="status-content">
+          <div class="status-heading">
+            <div>
+              <span class="section-kicker">Analyzing session</span>
+              <h2 id="status-message">Preparing analysis</h2>
+            </div>
+            <div class="status-numbers">
+              <strong id="status-percent">0%</strong>
+              <small id="status-eta">estimating ETA</small>
+            </div>
+          </div>
+          <div class="progress-track"><span id="progress-bar"></span></div>
+          <div class="status-stages" id="status-stages">
+            <span data-stage="queued">Queued</span>
+            <span data-stage="inspecting">Read metadata</span>
+            <span data-stage="downloading">Audio</span>
+            <span data-stage="recognizing">Identify tracks</span>
+            <span data-stage="rescanning">Rescan</span>
+          </div>
+
+          <div class="timeline" id="timeline" aria-label="Detected transitions">
+            <div class="timeline-track" id="timeline-track">
+              <span class="timeline-cursor" id="timeline-cursor"></span>
+            </div>
+            <div class="timeline-meta">
+              <span id="timeline-meta">Detecting transitions…</span>
+              <button type="button" id="cancel-button" class="danger-button">
+                Cancel job
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="error-panel shell is-hidden" id="error-panel" aria-live="assertive">
+        <span>!</span>
+        <div>
+          <strong>Could not generate this tracklist</strong>
+          <p id="error-message"></p>
+        </div>
+        <button type="button" id="retry-button">Try again</button>
+      </section>
+
+      <section class="results shell is-hidden" id="results">
+        <article class="video-card">
+          <img id="video-thumbnail" alt="" />
+          <div class="video-overlay"></div>
+          <div class="video-info">
+            <span class="section-kicker">Analyzed session</span>
+            <h2 id="video-title"></h2>
+            <div class="video-meta">
+              <span id="video-channel"></span>
+              <span id="video-duration"></span>
+              <span id="track-count"></span>
+              <span id="cache-state" class="cache-pill is-hidden">⚡ Used cached audio</span>
+            </div>
+          </div>
+        </article>
+
+        <div class="tracklist-heading">
+          <div>
+            <span class="section-kicker">Results</span>
+            <h2>Full tracklist</h2>
+          </div>
+          <div class="actions">
+            <details class="export-menu">
+              <summary class="secondary-button" aria-label="Export tracklist">
+                Export
+                <svg viewBox="0 0 14 14" aria-hidden="true"><path d="m3 5 4 4 4-4" /></svg>
+              </summary>
+              <div class="export-options" role="menu">
+                <button type="button" data-format="txt">Plain text</button>
+                <button type="button" data-format="csv">CSV (spreadsheet)</button>
+                <button type="button" data-format="json">JSON</button>
+                <button type="button" data-format="m3u">M3U playlist</button>
+              </div>
+            </details>
+            <button class="secondary-button" type="button" id="share-button">Share link</button>
+            <button class="primary-button compact" type="button" id="new-button">New session</button>
+          </div>
+        </div>
+
+        <div class="track-table">
+          <div class="track-header">
+            <span>#</span>
+            <span>Track</span>
+            <span>Start</span>
+            <span>Source</span>
+            <span class="track-row-actions-head"></span>
+          </div>
+          <div id="track-list"></div>
+        </div>
+      </section>
+
+      <section class="method shell" id="how">
+        <div class="method-intro">
+          <span class="section-kicker">How it works</span>
+          <h2>Three steps.<br />Zero cost.</h2>
+          <p>
+            TrackID is just three free open-source libraries combined: <code>yt-dlp</code> for
+            YouTube metadata and audio, <code>FFmpeg</code> for cutting samples, and
+            <code>ShazamIO</code> for track identification.
+          </p>
+        </div>
+        <div class="method-grid">
+          <article>
+            <span>01</span>
+            <h3>Read the video</h3>
+            <p>
+              We first check YouTube's chapters and description. If a tracklist already
+              exists, we use it as-is — no audio download needed.
+            </p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Detect transitions</h3>
+            <p>
+              Otherwise, FFmpeg's silencedetect finds the real track transitions. We
+              download the audio once and cache it for future rescans.
+            </p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Identify and group</h3>
+            <p>
+              Samples are hashed and cached, sent to Shazam's public endpoint, and grouped
+              into a timestamped tracklist with original mix tags.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="features shell" id="features">
+        <div class="features-intro">
+          <span class="section-kicker">Features</span>
+          <h2>Built for replay, not hype.</h2>
+        </div>
+        <div class="features-grid">
+          <article>
+            <strong>Two analysis modes</strong>
+            <p>Quick for casual sets, Thorough for marathon mixes.</p>
+          </article>
+          <article>
+            <strong>Smart caching</strong>
+            <p>The audio and fingerprints are hashed, so rescan jobs never re-download or re-call Shazam for the same sample.</p>
+          </article>
+          <article>
+            <strong>Rescan any window</strong>
+            <p>Click any row to re-identify a section with finer samples. Cancels and resumes supported.</p>
+          </article>
+          <article>
+            <strong>Exports everywhere</strong>
+            <p>Plain text, CSV, JSON, or an M3U playlist that opens in any media player.</p>
+          </article>
+          <article>
+            <strong>Shareable jobs</strong>
+            <p>Each analysis persists in SQLite and can be reopened by anyone with the link.</p>
+          </article>
+          <article>
+            <strong>Cancel anytime</strong>
+            <p>Stop an in-flight recognition with a single click; partial results are kept.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="self-host shell" id="self-host">
+        <div>
+          <span class="section-kicker">Self-host</span>
+          <h2>Run it on your own machine.</h2>
+          <p>
+            TrackID is a single FastAPI service. Clone it, run
+            <code>docker compose up</code> and you have a private instance with no
+            external dependencies beyond <code>ffmpeg</code> and your machine's network.
+          </p>
+          <pre><code>git clone https://github.com/you/trackid
+cd trackid
+docker compose up --build
+# open http://localhost:8000</code></pre>
+        </div>
+        <ul class="self-host-list">
+          <li>MIT licensed</li>
+          <li>Single SQLite file for cache and history</li>
+          <li>Health endpoint for monitoring</li>
+          <li>Docker image based on python:3.13-slim</li>
+          <li>No third-party API keys</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="shell">
+      <span>TrackID · open source under MIT</span>
+      <p>
+        For personal use. Respect the rights of artists and labels. YouTube and
+        Shazam are trademarks of their respective owners.
+      </p>
+    </footer>
+  </body>
+</html>

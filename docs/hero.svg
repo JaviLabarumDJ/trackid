@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-label="TrackID interface preview">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b0e0b"/>
+      <stop offset="1" stop-color="#10130e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#d6ff36"/>
+      <stop offset="1" stop-color="#7cb82a"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1a1c1a"/>
+      <stop offset="1" stop-color="#0e100d"/>
+    </linearGradient>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M0 0H64V64" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
+  <circle cx="200" cy="120" r="280" fill="#d6ff36" opacity="0.10"/>
+  <circle cx="1080" cy="540" r="240" fill="#654eff" opacity="0.10"/>
+  <g transform="translate(80,60)">
+    <rect width="40" height="40" rx="8" fill="#0e100d" stroke="#d6ff36" stroke-opacity="0.6"/>
+    <g fill="#d6ff36" transform="translate(12,12)">
+      <rect x="0" y="9" width="3" height="6" rx="1"/>
+      <rect x="5" y="5" width="3" height="14" rx="1"/>
+      <rect x="10" y="7" width="3" height="10" rx="1"/>
+      <rect x="15" y="11" width="3" height="4" rx="1"/>
+    </g>
+    <text x="56" y="32" font-family="Inter,Arial" font-weight="850" font-size="22" fill="#f4f5ef" letter-spacing="-1">TRACK<tspan fill="#d6ff36">ID</tspan></text>
+    <rect x="540" y="14" width="170" height="32" rx="16" fill="#0e100d" stroke="#262826"/>
+    <text x="566" y="34" font-family="Inter,Arial" font-weight="700" font-size="11" fill="#979b94" letter-spacing="2">OPEN SOURCE · LOCAL</text>
+  </g>
+  <g transform="translate(80,140)">
+    <text font-family="Inter,Arial" font-weight="800" font-size="12" fill="#d6ff36" letter-spacing="3">
+      <tspan x="0" y="0">FREE, LOCAL, OPEN-SOURCE</tspan>
+    </text>
+    <line x1="160" y1="-4" x2="190" y2="-4" stroke="#d6ff36" stroke-width="1"/>
+    <text font-family="Inter,Arial" font-weight="850" font-size="78" letter-spacing="-6" fill="#f4f5ef" y="80">
+      <tspan x="0">From a YouTube</tspan>
+    </text>
+    <text font-family="Inter,Arial" font-weight="850" font-size="78" letter-spacing="-6" fill="#f4f5ef" y="160">
+      <tspan x="0">set to a <tspan font-family="Georgia,serif" font-weight="400" font-style="italic" fill="#d6ff36">full tracklist.</tspan></tspan>
+    </text>
+    <text font-family="Inter,Arial" font-size="18" fill="#b7bab4" y="200">
+      <tspan x="0">Paste a DJ session URL. TrackID identifies every track and rebuilds</tspan>
+    </text>
+    <text font-family="Inter,Arial" font-size="18" fill="#b7bab4" y="224">
+      <tspan x="0">the list with timestamps you can jump to in one click.</tspan>
+    </text>
+  </g>
+  <g transform="translate(80,440)">
+    <rect width="780" height="100" rx="20" fill="url(#card)" stroke="rgba(255,255,255,0.1)"/>
+    <text x="20" y="32" font-family="Inter,Arial" font-size="11" font-weight="800" letter-spacing="2" fill="#979b94">SESSION URL</text>
+    <rect x="20" y="40" width="540" height="44" rx="10" fill="#0d0f0d" stroke="rgba(255,255,255,0.1)"/>
+    <text x="40" y="68" font-family="SFMono,monospace" font-size="14" fill="#979b94">https://www.youtube.com/watch?v=...</text>
+    <g transform="translate(600,40)">
+      <rect width="160" height="44" rx="10" fill="url(#accent)"/>
+      <text x="22" y="28" font-family="Inter,Arial" font-weight="800" font-size="13" fill="#11150a">Generate tracklist</text>
+      <path d="M132 16L146 22L132 28" fill="none" stroke="#11150a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+  <g transform="translate(900,160)">
+    <rect width="320" height="320" rx="20" fill="url(#card)" stroke="rgba(255,255,255,0.1)"/>
+    <text x="24" y="40" font-family="Inter,Arial" font-size="11" font-weight="800" letter-spacing="3" fill="#d6ff36">FULL TRACKLIST</text>
+    <line x1="24" y1="58" x2="296" y2="58" stroke="rgba(255,255,255,0.08)"/>
+    <g font-family="Inter,Arial" font-size="13" fill="#f4f5ef">
+      <text x="24" y="92"><tspan font-family="SFMono,monospace" fill="#d6ff36">00:00</tspan> · Rick Astley — Never Gonna Give You Up</text>
+      <text x="24" y="130"><tspan font-family="SFMono,monospace" fill="#d6ff36">03:42</tspan> · Daft Punk — Around the World <tspan font-family="Inter,Arial" font-size="10" fill="#979b94">ORIGINAL</tspan></text>
+      <text x="24" y="168"><tspan font-family="SFMono,monospace" fill="#d6ff36">07:14</tspan> · Carl Cox — Familia</text>
+      <text x="24" y="206"><tspan font-family="SFMono,monospace" fill="#d6ff36">11:08</tspan> · Bicep — Glue <tspan font-family="Inter,Arial" font-size="10" fill="#979b94">REMIX</tspan></text>
+      <text x="24" y="244"><tspan font-family="SFMono,monospace" fill="#d6ff36">14:55</tspan> · Peggy Gou — It Makes You Forget</text>
+      <text x="24" y="282"><tspan font-family="SFMono,monospace" fill="#d6ff36">19:21</tspan> · Honey Dijon — Not About You</text>
+    </g>
+    <g transform="translate(60,310)">
+      <rect width="200" height="8" rx="4" fill="#0d0f0d"/>
+      <rect width="100" height="8" rx="4" fill="#d6ff36"/>
+      <text x="0" y="-6" font-family="Inter,Arial" font-size="10" font-weight="800" fill="#979b94" letter-spacing="2">TIMELINE · 21 TRACKS IDENTIFIED</text>
+    </g>
+  </g>
+  <g transform="translate(80,560)" font-family="Inter,Arial" font-size="11" fill="#979b94" letter-spacing="3">
+    <text x="0" y="0">⚡ FREE · NO ACCOUNT · NO API KEYS</text>
+  </g>
+</svg>

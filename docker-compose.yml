@@ -1,0 +1,17 @@
+services:
+  trackid:
+    build: .
+    image: trackid:latest
+    container_name: trackid
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      LOG_LEVEL: INFO
+      TRACKID_MAX_WORKERS: "1"
+    volumes:
+      - trackid-data:/app/data
+
+volumes:
+  trackid-data:
+    driver: local

@@ -88,7 +88,7 @@ that hasn't changed.
 ### Docker
 
 ```bash
-git clone https://github.com/<your-user>/trackid
+git clone https://github.com/javiservices/trackid
 cd trackid
 docker compose up --build
 # open http://localhost:8000

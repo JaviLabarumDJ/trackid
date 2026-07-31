@@ -83,6 +83,68 @@ that hasn't changed.
 7. **Persist.** The result, audio path, fingerprint cache and event log are all
    in `data/trackid.db`.
 
+## Requirements
+
+### Hardware
+
+- **CPU:** any 64-bit x86 / ARM CPU. No GPU needed. Audio decoding is
+  single-threaded per worker; dual-core or better is recommended for running
+  the foreground UI while a job is in flight.
+- **RAM:** 512 MB minimum, 1 GB comfortable. Audio samples peak around
+  ~100 MB RSS; sqlite + caches are tiny.
+- **Disk:** ~600 MB per cached audio file at 192 kbps. Plan for 1–2 GB free if
+  you analyse a few sets per week. SQLite DB stays well under 100 MB unless you
+  retain hundreds of jobs.
+- **Network:** outbound HTTPS to `youtube.com`, `*.googlevideo.com` and
+  `amp.shazam.com`. Residential connections usually work; some cloud providers
+  block YouTube downloads, in which case use a small VPS on a home-friendly
+  network.
+
+### Software
+
+- **Python 3.10 or newer** (3.12 / 3.13 recommended). The base Docker image
+  uses `python:3.13-slim`.
+- **FFmpeg 4.4 or newer.** Already bundled inside the `imageio-ffmpeg` wheel
+  for local installs, but installing the system binary (and pointing
+  `IMAGEIO_FFMPEG_EXE` at it) is faster and recommended in production:
+  ```bash
+  # Debian / Ubuntu
+  sudo apt-get update && sudo apt-get install -y ffmpeg
+
+  # macOS
+  brew install ffmpeg
+  ```
+- **`yt-dlp`** is installed by `pip install .`, so it stays in sync with the
+  pinned version in `pyproject.toml`. Network-aware users behind restrictive
+  firewalls may also need to install the optional `curl-cffi` extractor
+  manually — see `yt-dlp`'s notes if YouTube requests fail with extractor
+  errors.
+- **A modern browser** for the web UI. Anything released in the last two years
+  supports Server-Sent Events, Clipboard API, and `<dialog>` fallbacks.
+
+### Optional
+
+- **Docker Engine 24+** with **Compose v2** if you want the containerised
+  install path. The included `Dockerfile` is a single-stage image that already
+  installs ffmpeg, so you only need Docker.
+- **Git** to clone the repository.
+- **`make`** is *not* required — there is no `Makefile`.
+
+### Network egress
+
+Make sure these hostnames are reachable; otherwise downloads or recognition
+will time out:
+
+| Host                     | Port | Why                                     |
+| ------------------------ | ---- | --------------------------------------- |
+| `www.youtube.com`        | 443  | Video metadata via `yt-dlp`             |
+| `*.googlevideo.com`      | 443  | Media segments (m4a)                    |
+| `amp.shazam.com`         | 443  | Audio fingerprint recognition           |
+| `api.github.com`         | 443  | _(optional)_ only if you self-update    |
+
+If you run TrackID behind a proxy, set `HTTPS_PROXY` / `HTTP_PROXY` in the
+environment — both `yt-dlp` and `aiohttp` honour them automatically.
+
 ## Quick start
 
 ### Docker

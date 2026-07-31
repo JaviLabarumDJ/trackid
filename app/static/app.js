@@ -486,4 +486,69 @@
     submitButton.disabled = submitting;
     submitButton.querySelector("span").textContent = submitting ? "Starting…" : "Generate tracklist";
   }
+
+  const SOCIAL_DISMISS_KEY = "trackid-social-dismissed";
+  const SOCIAL_DELAY = 6500;
+  const followFab = document.querySelector("#follow-fab");
+  const followModal = document.querySelector("#follow-modal");
+  const followModalClose = document.querySelector("#follow-modal-close");
+  const followModalBackdrop = document.querySelector("#follow-modal-backdrop");
+  const followModalDismiss = document.querySelector("#follow-modal-dismiss");
+
+  function socialDismissed() {
+    try {
+      return localStorage.getItem(SOCIAL_DISMISS_KEY) === "1";
+    } catch {
+      return true;
+    }
+  }
+
+  function persistSocialDismiss() {
+    try {
+      localStorage.setItem(SOCIAL_DISMISS_KEY, "1");
+    } catch {
+      /* private mode */
+    }
+  }
+
+  function openFollowModal() {
+    if (socialDismissed()) return;
+    followModal?.classList.remove("is-hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeFollowModal() {
+    followModal?.classList.add("is-hidden");
+    document.body.style.overflow = "";
+  }
+
+  function handleSocialClick(event) {
+    if (socialDismissed()) return;
+    persistSocialDismiss();
+    followFab?.classList.add("is-hidden");
+  }
+
+  function startSocialNudge() {
+    if (socialDismissed()) return;
+    followFab?.classList.remove("is-hidden");
+    setTimeout(openFollowModal, SOCIAL_DELAY);
+  }
+
+  followFab?.addEventListener("click", openFollowModal);
+  followModalClose?.addEventListener("click", closeFollowModal);
+  followModalBackdrop?.addEventListener("click", closeFollowModal);
+  followModalDismiss?.addEventListener("click", () => {
+    persistSocialDismiss();
+    closeFollowModal();
+    followFab?.classList.add("is-hidden");
+  });
+  document.querySelectorAll(".site-nav a.social-icon, .follow-button").forEach((link) =>
+    link.addEventListener("click", handleSocialClick)
+  );
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && followModal && !followModal.classList.contains("is-hidden")) {
+      closeFollowModal();
+    }
+  });
+  window.addEventListener("load", startSocialNudge, { once: true });
 })();

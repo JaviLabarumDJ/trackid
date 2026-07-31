@@ -34,6 +34,32 @@
         <a href="#how">How it works</a>
         <a href="#features">Features</a>
         <a href="#self-host">Self-host</a>
+        <a
+          class="ghost social-icon"
+          href="https://www.instagram.com/javilabarumdj"
+          rel="noopener noreferrer"
+          target="_blank"
+          aria-label="Follow @javilabarumdj on Instagram"
+          title="Follow @javilabarumdj on Instagram"
+          data-network="instagram"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 1.9.3 2.3.4.6.2 1 .5 1.5 1 .5.5.8.9 1 1.5.2.4.4 1.1.4 2.3.1 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.3 1.9-.4 2.3-.2.6-.5 1-1 1.5-.5.5-.9.8-1.5 1-.4.2-1.1.4-2.3.4-1.2.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-1.9-.3-2.3-.4-.6-.2-1-.5-1.5-1-.5-.5-.8-.9-1-1.5-.2-.4-.4-1.1-.4-2.3C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8c.1-1.2.3-1.9.4-2.3.2-.6.5-1 1-1.5.5-.5.9-.8 1.5-1 .4-.2 1.1-.4 2.3-.4C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1.1 0-1.7.2-2.1.4-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.1.4-.3 1-.4 2.1 0 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c0 1.1.2 1.7.4 2.1.2.5.4.9.8 1.3.4.4.8.6 1.3.8.4.1 1 .3 2.1.4 1.2 0 1.6.1 4.7.1s3.5 0 4.7-.1c1.1 0 1.7-.2 2.1-.4.5-.2.9-.4 1.3-.8.4-.4.6-.8.8-1.3.1-.4.3-1 .4-2.1 0-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c0-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.3-.4-.4-.8-.6-1.3-.8-.4-.1-1-.3-2.1-.4-1.2 0-1.6-.1-4.7-.1zM12 7.4a4.6 4.6 0 1 1 0 9.2 4.6 4.6 0 0 1 0-9.2zm0 1.8a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6zm5.7-2.4a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0z"/>
+          </svg>
+        </a>
+        <a
+          class="ghost social-icon"
+          href="https://www.tiktok.com/@javilabarumdj"
+          rel="noopener noreferrer"
+          target="_blank"
+          aria-label="Follow @javilabarumdj on TikTok"
+          title="Follow @javilabarumdj on TikTok"
+          data-network="tiktok"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19.6 6.8c-1.5-.4-2.7-1.4-3.4-2.8-.5-1-.5-2-.5-2.5h-3v12.6c0 1.5-1.2 2.7-2.7 2.7s-2.7-1.2-2.7-2.7 1.2-2.7 2.7-2.7c.3 0 .6 0 .8.1V7.7c-.3 0-.5-.1-.8-.1-3.2 0-5.7 2.6-5.7 5.7s2.6 5.7 5.7 5.7 5.7-2.6 5.7-5.7V8.1c1.2.7 2.5 1.1 4 1.1V6.8h-.1z"/>
+          </svg>
+        </a>
         <a class="ghost" href="https://github.com/javiservices/trackid" rel="noopener noreferrer">GitHub ↗</a>
       </nav>
     </header>
@@ -291,9 +317,62 @@ docker compose up --build
     <footer class="shell">
       <span>TrackID · open source under MIT</span>
       <p>
-        For personal use. Respect the rights of artists and labels. YouTube and
-        Shazam are trademarks of their respective owners.
+        Built and curated by <a class="signature" href="https://www.instagram.com/javilabarumdj" rel="noopener noreferrer" target="_blank">@javilabarumdj</a>.
+        Follow on
+        <a class="signature" href="https://www.instagram.com/javilabarumdj" rel="noopener noreferrer" target="_blank">Instagram</a>
+        &
+        <a class="signature" href="https://www.tiktok.com/@javilabarumdj" rel="noopener noreferrer" target="_blank">TikTok</a>.
       </p>
     </footer>
+
+    <button type="button" id="follow-fab" class="follow-fab is-hidden" aria-label="Follow @javilabarumdj on social media">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 21s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.6-9.5 9-9.5 9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+      <span>Follow @javilabarumdj</span>
+    </button>
+
+    <div id="follow-modal" class="follow-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="follow-modal-title" aria-describedby="follow-modal-body">
+      <button type="button" id="follow-modal-backdrop" class="follow-modal-backdrop" aria-label="Close"></button>
+      <div class="follow-modal-card">
+        <button type="button" id="follow-modal-close" class="follow-modal-close" aria-label="Close">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M3 3l10 10M13 3 3 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="follow-modal-art" aria-hidden="true">
+          <span class="follow-modal-disc"></span>
+        </div>
+        <span class="section-kicker">Built with love for the scene</span>
+        <h3 id="follow-modal-title">Like TrackID? Follow the DJ behind it.</h3>
+        <p id="follow-modal-body">
+          New mixes, tracklists and behind-the-decks every week. Drop a follow
+          on either platform — it really helps.
+        </p>
+        <div class="follow-modal-actions">
+          <a class="follow-button instagram" href="https://www.instagram.com/javilabarumdj" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 1.9.3 2.3.4.6.2 1 .5 1.5 1 .5.5.8.9 1 1.5.2.4.4 1.1.4 2.3.1 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.3 1.9-.4 2.3-.2.6-.5 1-1 1.5-.5.5-.9.8-1.5 1-.4.2-1.1.4-2.3.4-1.2.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-1.9-.3-2.3-.4-.6-.2-1-.5-1.5-1-.5-.5-.8-.9-1-1.5-.2-.4-.4-1.1-.4-2.3C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8c.1-1.2.3-1.9.4-2.3.2-.6.5-1 1-1.5.5-.5.9-.8 1.5-1 .4-.2 1.1-.4 2.3-.4C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1.1 0-1.7.2-2.1.4-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.1.4-.3 1-.4 2.1 0 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c0 1.1.2 1.7.4 2.1.2.5.4.9.8 1.3.4.4.8.6 1.3.8.4.1 1 .3 2.1.4 1.2 0 1.6.1 4.7.1s3.5 0 4.7-.1c1.1 0 1.7-.2 2.1-.4.5-.2.9-.4 1.3-.8.4-.4.6-.8.8-1.3.1-.4.3-1 .4-2.1 0-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c0-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.3-.4-.4-.8-.6-1.3-.8-.4-.1-1-.3-2.1-.4-1.2 0-1.6-.1-4.7-.1zM12 7.4a4.6 4.6 0 1 1 0 9.2 4.6 4.6 0 0 1 0-9.2zm0 1.8a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6zm5.7-2.4a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0z"/>
+            </svg>
+            <span>
+              <strong>Follow on Instagram</strong>
+              <small>@javilabarumdj</small>
+            </span>
+          </a>
+          <a class="follow-button tiktok" href="https://www.tiktok.com/@javilabarumdj" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19.6 6.8c-1.5-.4-2.7-1.4-3.4-2.8-.5-1-.5-2-.5-2.5h-3v12.6c0 1.5-1.2 2.7-2.7 2.7s-2.7-1.2-2.7-2.7 1.2-2.7 2.7-2.7c.3 0 .6 0 .8.1V7.7c-.3 0-.5-.1-.8-.1-3.2 0-5.7 2.6-5.7 5.7s2.6 5.7 5.7 5.7 5.7-2.6 5.7-5.7V8.1c1.2.7 2.5 1.1 4 1.1V6.8h-.1z"/>
+            </svg>
+            <span>
+              <strong>Follow on TikTok</strong>
+              <small>@javilabarumdj</small>
+            </span>
+          </a>
+        </div>
+        <button type="button" id="follow-modal-dismiss" class="follow-modal-dismiss">
+          Already following, hide this
+        </button>
+      </div>
+    </div>
   </body>
 </html>

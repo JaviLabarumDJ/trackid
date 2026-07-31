@@ -210,6 +210,12 @@ MIT — see [`LICENSE`](LICENSE).
 
 ## Acknowledgements
 
+Built and curated by [@javilabarumdj](https://www.instagram.com/javilabarumdj)
+— follow along on [Instagram](https://www.instagram.com/javilabarumdj) and
+[TikTok](https://www.tiktok.com/@javilabarumdj) for the mixes behind it.
+
+Pipes:
+
 - [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) for YouTube access
 - [`ShazamIO`](https://github.com/nesebar/shazamio) for identification
 - [`FastAPI`](https://fastapi.tiangolo.com/) and

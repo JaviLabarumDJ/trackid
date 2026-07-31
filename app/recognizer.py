@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
+import json
 import logging
 import math
 import os
 import re
+import sqlite3
 import subprocess
 import tempfile
 import unicodedata
@@ -13,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import aiohttp
 from shazamio import Shazam
 
 from app.audio import create_sample, detect_transitions
@@ -84,6 +88,9 @@ class TracklistAnalyzer:
     def __init__(self, store: Store) -> None:
         self._store = store
         self.max_duration = int(os.getenv("TRACKID_MAX_DURATION", "14400"))
+        self._sample_timeout = max(5.0, float(os.getenv("TRACKID_SAMPLE_TIMEOUT", "20")))
+        self._shazam_timeout = max(5.0, float(os.getenv("TRACKID_SHAZAM_TIMEOUT", "20")))
+        self._hash_timeout = max(1.0, float(os.getenv("TRACKID_HASH_TIMEOUT", "5")))
 
     async def analyze(
         self,
@@ -290,78 +297,139 @@ class TracklistAnalyzer:
         semaphore = asyncio.Semaphore(profile.concurrency)
         completed_counter = 0
         completed_lock = asyncio.Lock()
+        total_positions = len(positions)
         shazam = Shazam()
 
         async def recognize_position(position: int) -> RecognitionResult | None:
             nonlocal completed_counter
-            if is_cancelled():
-                return None
-            async with semaphore:
-                sample_path = audio_path.parent / f"sample-{position}.mp3"
-                try:
-                    await asyncio.to_thread(
-                        create_sample,
-                        audio_path,
-                        sample_path,
-                        position,
+            try:
+                return await self._recognize_one(
+                    position=position,
+                    audio_path=audio_path,
+                    job_id=job_id,
+                    semaphore=semaphore,
+                    shazam=shazam,
+                )
+            finally:
+                async with completed_lock:
+                    completed_counter += 1
+                    percentage = 32 + round(
+                        (completed_counter / total_positions) * 63
                     )
-                    if is_cancelled():
-                        return None
-                    sample_hash = await asyncio.to_thread(Store.hash_sample, sample_path)
-                    cached_result = self._store.get_fingerprint(sample_hash)
-                    if cached_result is not None:
-                        recognition = parse_recognition(cached_result, position)
-                    else:
-                        raw_result = await shazam.recognize(str(sample_path))
-                        await asyncio.to_thread(
-                            self._store.store_fingerprint, sample_hash, raw_result
-                        )
-                        recognition = parse_recognition(raw_result, position)
-                    if recognition is not None:
-                        section = SectionRecognition(
-                            sample_position=position,
-                            fingerprint=recognition.fingerprint,
-                            artist=recognition.artist,
-                            title=recognition.title,
-                            mix=recognition.mix,
-                            offset=recognition.offset,
-                            cover_url=recognition.cover_url,
-                            track_url=recognition.track_url,
-                        )
-                        self._store.save_section_recognition(
-                            job_id, position, sample_hash, section
-                        )
-                    return recognition
-                except (
-                    OSError,
-                    RuntimeError,
-                    ValueError,
-                    KeyError,
-                    asyncio.TimeoutError,
-                    asyncio.CancelledError,
-                    subprocess.SubprocessError,
-                ):
-                    return None
-                finally:
-                    sample_path.unlink(missing_ok=True)
-                    async with completed_lock:
-                        completed_counter += 1
-                        percentage = 32 + round(
-                            (completed_counter / len(positions)) * 63
-                        )
-                        progress(
-                            JobStatus.recognizing,
-                            min(95, percentage),
-                            f"Recognized {completed_counter} of {len(positions)} samples",
-                        )
+                    progress(
+                        JobStatus.recognizing,
+                        min(95, percentage),
+                        f"Recognized {completed_counter} of {total_positions} samples",
+                    )
 
         results = await asyncio.gather(
-            *(recognize_position(position) for position in positions)
+            *(recognize_position(position) for position in positions),
+            return_exceptions=True,
         )
-        return sorted(
-            (result for result in results if result),
-            key=lambda item: item.sample_position,
-        )
+        recognized: list[RecognitionResult] = []
+        for result in results:
+            if isinstance(result, BaseException):
+                continue
+            if result is not None:
+                recognized.append(result)
+        return sorted(recognized, key=lambda item: item.sample_position)
+
+    async def _recognize_one(
+        self,
+        *,
+        position: int,
+        audio_path: Path,
+        job_id: str,
+        semaphore: asyncio.Semaphore,
+        shazam: Shazam,
+    ) -> RecognitionResult | None:
+        async with semaphore:
+            sample_path = audio_path.parent / f"sample-{position}.mp3"
+            try:
+                try:
+                    await asyncio.wait_for(
+                        asyncio.to_thread(
+                            create_sample,
+                            audio_path,
+                            sample_path,
+                            position,
+                        ),
+                        timeout=self._sample_timeout,
+                    )
+                except (asyncio.TimeoutError, OSError, subprocess.SubprocessError) as error:
+                    logger.debug("Sample %s extraction failed: %s", position, error)
+                    return None
+
+                try:
+                    sample_hash = await asyncio.wait_for(
+                        asyncio.to_thread(Store.hash_sample, sample_path),
+                        timeout=self._hash_timeout,
+                    )
+                except (asyncio.TimeoutError, OSError) as error:
+                    logger.debug("Hash for %s failed: %s", position, error)
+                    return None
+
+                cached_result = self._store.get_fingerprint(sample_hash)
+                if cached_result is not None:
+                    recognition = parse_recognition(cached_result, position)
+                else:
+                    try:
+                        raw_result = await asyncio.wait_for(
+                            shazam.recognize(str(sample_path)),
+                            timeout=self._shazam_timeout,
+                        )
+                    except (
+                        asyncio.TimeoutError,
+                        aiohttp.ClientError,
+                        json.JSONDecodeError,
+                        KeyError,
+                        ValueError,
+                    ) as error:
+                        logger.warning(
+                            "Shazam recognition for sample %s failed: %s",
+                            position,
+                            error,
+                        )
+                        return None
+                    except Exception as error:
+                        logger.warning(
+                            "Unexpected Shazam error for sample %s: %s",
+                            position,
+                            error,
+                        )
+                        return None
+                    with contextlib.suppress(sqlite3.OperationalError):
+                        await asyncio.to_thread(
+                            self._store.store_fingerprint,
+                            sample_hash,
+                            raw_result,
+                        )
+                    recognition = parse_recognition(raw_result, position)
+
+                if recognition is not None:
+                    section = SectionRecognition(
+                        sample_position=position,
+                        fingerprint=recognition.fingerprint,
+                        artist=recognition.artist,
+                        title=recognition.title,
+                        mix=recognition.mix,
+                        offset=recognition.offset,
+                        cover_url=recognition.cover_url,
+                        track_url=recognition.track_url,
+                    )
+                    self._store.save_section_recognition(
+                        job_id, position, sample_hash, section
+                    )
+                return recognition
+            except asyncio.CancelledError:
+                raise
+            except Exception as error:
+                logger.warning(
+                    "Recognition for sample %s crashed: %s", position, error
+                )
+                return None
+            finally:
+                sample_path.unlink(missing_ok=True)
 
 
 def build_tracklist(

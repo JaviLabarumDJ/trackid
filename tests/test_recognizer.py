@@ -1,13 +1,20 @@
 from __future__ import annotations
 
+import asyncio
+import time
+from pathlib import Path
+from typing import Any
+
 import pytest
 
 from app.recognizer import (
     RecognitionResult,
+    TracklistAnalyzer,
     build_tracklist,
     parse_recognition,
     split_mix,
 )
+from app.store import Store
 
 
 def recognition(
@@ -85,3 +92,97 @@ def test_parse_recognition_extracts_offset_and_cover() -> None:
 def test_parse_recognition_without_track_returns_none() -> None:
     assert parse_recognition({"track": None}, 10) is None
     assert parse_recognition({}, 10) is None
+
+
+class _BlockingShazam:
+    async def recognize(self, _path: str) -> dict[str, Any]:
+        await asyncio.sleep(60)
+        return {}
+
+
+class _SlowShazam:
+    def __init__(self, delay: float) -> None:
+        self.delay = delay
+        self.calls = 0
+
+    async def recognize(self, _path: str) -> dict[str, Any]:
+        self.calls += 1
+        await asyncio.sleep(self.delay)
+        return {"track": None}
+
+
+@pytest.mark.asyncio
+async def test_analyzer_skips_samples_when_shazam_hangs(tmp_path: Path) -> None:
+    store = Store(tmp_path / "db.sqlite", tmp_path / "audio")
+    audio_path = tmp_path / "fake.m4a"
+    audio_path.write_bytes(b"\x00")
+    analyzer = TracklistAnalyzer(store)
+    analyzer._shazam_timeout = 0.5
+
+    semaphore = asyncio.Semaphore(1)
+
+    def fake_cutting(_audio_path: Path, sample_path: Path, _position: int) -> None:
+        sample_path.write_bytes(b"\x00")
+
+    import app.recognizer as recognizer_module
+
+    original = recognizer_module.create_sample
+    recognizer_module.create_sample = fake_cutting
+    try:
+        positions = list(range(0, 60, 6))
+        results = await asyncio.gather(
+            *(
+                analyzer._recognize_one(
+                    position=position,
+                    audio_path=audio_path,
+                    job_id="test",
+                    semaphore=semaphore,
+                    shazam=_BlockingShazam(),
+                )
+                for position in positions
+            ),
+            return_exceptions=True,
+        )
+    finally:
+        recognizer_module.create_sample = original
+    completed = [r for r in results if r is None or isinstance(r, RecognitionResult)]
+    assert len(completed) == len(positions)
+    assert all(result is None for result in completed)
+
+
+@pytest.mark.asyncio
+async def test_progress_completes_after_timeouts(tmp_path: Path) -> None:
+    store = Store(tmp_path / "db.sqlite", tmp_path / "audio")
+    audio_path = tmp_path / "fake.m4a"
+    audio_path.write_bytes(b"\x00")
+    analyzer = TracklistAnalyzer(store)
+    analyzer._shazam_timeout = 0.2
+
+    def fast_cut(_audio_path: Path, sample_path: Path, _position: int) -> None:
+        sample_path.write_bytes(b"\x00")
+
+    import app.recognizer as recognizer_module
+
+    original = recognizer_module.create_sample
+    recognizer_module.create_sample = fast_cut
+    try:
+        started = time.monotonic()
+        semaphore = asyncio.Semaphore(1)
+        results = await asyncio.gather(
+            *(
+                analyzer._recognize_one(
+                    position=position,
+                    audio_path=audio_path,
+                    job_id="test",
+                    semaphore=semaphore,
+                    shazam=_SlowShazam(0.5),
+                )
+                for position in range(0, 30, 6)
+            ),
+            return_exceptions=True,
+        )
+        elapsed = time.monotonic() - started
+    finally:
+        recognizer_module.create_sample = original
+    assert elapsed < 5
+    assert all(r is None for r in results)

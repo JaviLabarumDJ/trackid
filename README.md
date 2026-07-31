@@ -228,7 +228,19 @@ for personal use.
 | `TRACKID_SAMPLE_INTERVAL`   | `45`             | Base sampling interval, seconds                        |
 | `TRACKID_MAX_SAMPLES`       | `240`            | Hard cap on number of samples per session              |
 | `TRACKID_CONCURRENCY`       | `2`              | Recognition requests in flight per worker              |
+| `TRACKID_SAMPLE_TIMEOUT`    | `20`             | Per-sample FFmpeg cut timeout, seconds                 |
+| `TRACKID_SHAZAM_TIMEOUT`    | `20`             | Per-sample Shazam HTTP timeout, seconds                |
+| `TRACKID_HASH_TIMEOUT`      | `5`              | Per-sample SHA-256 hashing timeout, seconds           |
 | `LOG_LEVEL`                 | `INFO`           | Standard logging level                                 |
+
+### Resilience knobs
+
+- `TRACKID_SHAZAM_TIMEOUT` is the most important one. If Shazam's public
+  endpoint stalls, the sample is skipped instead of blocking the queue. Drop
+  it to `10` if you want a faster no-stall behaviour, raise it to `30` if you
+  have a slow connection.
+- `TRACKID_CONCURRENCY` controls how many recognitions run in parallel. The
+  default of `2` keeps you under Shazam's unofficial rate limits.
 
 ## Development
 

@@ -48,6 +48,7 @@ analyzer = TracklistAnalyzer(store)
 
 queue: asyncio.Queue[str] = asyncio.Queue()
 cancel_events: dict[str, asyncio.Event] = {}
+cancel_tasks: dict[str, asyncio.Task[None]] = {}
 inflight: set[str] = set()
 _workers: list[asyncio.Task[None]] = []
 app = FastAPI(title="TrackID", version="0.2.0", docs_url="/api/docs", redoc_url=None)
@@ -145,6 +146,9 @@ async def delete_job(job_id: str) -> Response:
 
 @app.post("/api/jobs/{job_id}/cancel")
 async def cancel_job(job_id: str) -> JSONResponse:
+    task = cancel_tasks.get(job_id)
+    if task is not None and not task.done():
+        task.cancel()
     cancel_event = cancel_events.get(job_id)
     if cancel_event is not None:
         cancel_event.set()
@@ -204,6 +208,9 @@ async def _run_job(job_id: str) -> None:
     cancel_event = asyncio.Event()
     cancel_events[job_id] = cancel_event
     inflight.add(job_id)
+    analysis_task = asyncio.current_task()
+    if analysis_task is not None:
+        cancel_tasks[job_id] = analysis_task
     try:
         section = store.pop_rescan_section(job_id)
         if section is not None:
@@ -216,7 +223,8 @@ async def _run_job(job_id: str) -> None:
             job_id, status=JobStatus.cancelled, progress=0, message="Cancelled"
         )
         store.broadcast(
-            job_id, JobEvent(status=JobStatus.cancelled, progress=0, message="Cancelled")
+            job_id,
+            JobEvent(status=JobStatus.cancelled, progress=0, message="Cancelled"),
         )
     except Exception as error:
         logger.exception("Job %s crashed", job_id)
@@ -227,6 +235,7 @@ async def _run_job(job_id: str) -> None:
         )
     finally:
         cancel_events.pop(job_id, None)
+        cancel_tasks.pop(job_id, None)
         inflight.discard(job_id)
 
 

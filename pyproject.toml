@@ -26,6 +26,7 @@ classifiers = [
   "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
 ]  # fmt: skip
 dependencies = [
+  "aiohttp>=3.8,<4",
   "audioop-lts>=0.2.2; python_version >= '3.13'",
   "fastapi>=0.116,<1",
   "imageio-ffmpeg>=0.6,<1",
@@ -40,6 +41,7 @@ dev = [
   "httpx>=0.28,<1",
   "mypy>=1.17,<2",
   "pytest>=8.4,<9",
+  "pytest-asyncio>=0.24,<1",
   "ruff>=0.12,<1",
 ]
 
@@ -65,3 +67,4 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+asyncio_mode = "auto"

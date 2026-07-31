@@ -261,15 +261,27 @@
   }
 
   function estimateEta(payload) {
-    if (payload.progress < 5 || payload.status !== "recognizing") {
+    if (payload.status !== "recognizing") {
       statusEta.textContent = "estimating ETA";
       return;
     }
-    const elapsed = (Date.now() - state.startedAt) / 1000;
-    const rate = payload.progress / Math.max(elapsed, 0.001);
-    const remainingSeconds = (100 - payload.progress) / rate;
-    state.progressSamples.push({ t: Date.now(), progress: payload.progress });
-    if (state.progressSamples.length > 12) state.progressSamples.shift();
+    const now = Date.now();
+    state.progressSamples.push({ t: now, p: payload.progress });
+    if (state.progressSamples.length > 8) state.progressSamples.shift();
+    if (state.progressSamples.length < 2) {
+      statusEta.textContent = "estimating ETA";
+      return;
+    }
+    const oldest = state.progressSamples[0];
+    const newest = state.progressSamples[state.progressSamples.length - 1];
+    const elapsedSeconds = (newest.t - oldest.t) / 1000;
+    const progressDelta = newest.p - oldest.p;
+    if (elapsedSeconds < 4 || progressDelta <= 0) {
+      statusEta.textContent = "estimating ETA";
+      return;
+    }
+    const rate = progressDelta / elapsedSeconds;
+    const remainingSeconds = (100 - newest.p) / rate;
     statusEta.textContent = formatEta(remainingSeconds);
   }
 
